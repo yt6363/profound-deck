@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yash × Profound</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000'/><text x='16' y='22' font-family='sans-serif' font-size='20' font-weight='bold' fill='%2300e600' text-anchor='middle'>P</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23050505'/><line x1='6' y1='6' x2='26' y2='26' stroke='%2300e600' stroke-width='3.5' stroke-linecap='round'/><line x1='26' y1='6' x2='6' y2='26' stroke='%2300e600' stroke-width='3.5' stroke-linecap='round'/></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
@@ -37,21 +37,6 @@
   }
 
 
-  .timer-bar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--border);
-    z-index: 1000;
-  }
-  .timer-fill {
-    height: 100%;
-    background: var(--green);
-    width: 100%;
-    transition: width 1s linear;
-    box-shadow: 0 0 10px var(--green-glow);
-  }
-
   .timer-container {
     position: fixed;
     top: 14px; right: 24px;
@@ -60,23 +45,13 @@
     align-items: center;
     gap: 10px;
   }
-  .timer-display {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    letter-spacing: 0.15em;
-    font-variant-numeric: tabular-nums;
-  }
-  .timer-display.running { color: var(--green); }
-  .timer-display.warning { color: #f59e0b; }
-  .timer-display.danger { color: #ef4444; }
   .timer-btn {
     background: none;
     border: 1px solid var(--border);
     color: var(--text-muted);
     font-family: 'Space Mono', monospace;
     font-size: 0.55rem;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     padding: 4px 8px;
     cursor: pointer;
@@ -393,12 +368,9 @@
 <body>
 
 
-<div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
 <div class="slide-label" id="slideLabel">01 / 06</div>
 <div class="timer-container">
-  <span class="timer-display" id="timerDisplay">30:00</span>
-  <button class="timer-btn" id="timerToggle" onclick="toggleTimer()">START</button>
-  <button class="timer-btn" onclick="resetTimer()">RESET</button>
+  <a href="https://calendly.com/yashwanthtatineni916/coffee-chat" target="_blank" class="timer-btn" style="text-decoration: none; padding: 5px 12px;">15 MIN COFFEE CHAT? I'LL WORK AROUND YOUR SCHEDULE →</a>
 </div>
 <div class="progress" id="progress"></div>
 <div class="nav-hint"><kbd>←</kbd> <kbd>→</kbd> or scroll</div>
@@ -628,53 +600,6 @@
 
   goToSlide(0);
 
-  let totalSeconds = 30 * 60;
-  let remainingSeconds = totalSeconds;
-  let timerInterval = null;
-  let timerRunning = false;
-
-  const timerDisplay = document.getElementById('timerDisplay');
-  const timerFill = document.getElementById('timerFill');
-  const timerToggle = document.getElementById('timerToggle');
-
-  function updateTimerDisplay() {
-    const m = Math.floor(remainingSeconds / 60);
-    const s = remainingSeconds % 60;
-    timerDisplay.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    timerFill.style.width = ((remainingSeconds / totalSeconds) * 100) + '%';
-    timerDisplay.className = 'timer-display';
-    if (timerRunning) {
-      if (remainingSeconds <= 120) timerDisplay.classList.add('danger');
-      else if (remainingSeconds <= 300) timerDisplay.classList.add('warning');
-      else timerDisplay.classList.add('running');
-    }
-  }
-
-  function toggleTimer() {
-    if (timerRunning) {
-      clearInterval(timerInterval);
-      timerRunning = false;
-      timerToggle.textContent = 'START';
-    } else {
-      timerRunning = true;
-      timerToggle.textContent = 'PAUSE';
-      timerInterval = setInterval(() => {
-        if (remainingSeconds > 0) { remainingSeconds--; updateTimerDisplay(); }
-        else { clearInterval(timerInterval); timerRunning = false; timerToggle.textContent = 'DONE'; }
-      }, 1000);
-    }
-    updateTimerDisplay();
-  }
-
-  function resetTimer() {
-    clearInterval(timerInterval);
-    timerRunning = false;
-    remainingSeconds = totalSeconds;
-    timerToggle.textContent = 'START';
-    updateTimerDisplay();
-  }
-
-  updateTimerDisplay();
 </script>
 </body>
 </html>
