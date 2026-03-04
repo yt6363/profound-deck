@@ -45,19 +45,20 @@
     align-items: center;
     gap: 10px;
   }
-  .timer-btn {
+  .coffee-link {
     background: none;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
+    border: none;
+    color: #ffffff;
     font-family: 'Space Mono', monospace;
-    font-size: 0.55rem;
-    letter-spacing: 0.15em;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 4px 8px;
+    text-decoration: none;
+    padding: 5px 0;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .timer-btn:hover { border-color: var(--green); color: var(--green); }
+  .coffee-link:hover { color: var(--green); }
 
   .slide-label {
     position: fixed;
@@ -370,7 +371,7 @@
 
 <div class="slide-label" id="slideLabel">01 / 06</div>
 <div class="timer-container">
-  <a href="https://calendly.com/yashwanthtatineni916/coffee-chat" target="_blank" class="timer-btn" style="text-decoration: none; padding: 5px 12px;">15 MIN COFFEE CHAT? I'LL WORK AROUND YOUR SCHEDULE →</a>
+  <a href="https://calendly.com/yashwanthtatineni916/coffee-chat" target="_blank" class="coffee-link">15 MIN COFFEE CHAT? I'LL WORK AROUND YOUR SCHEDULE →</a>
 </div>
 <div class="progress" id="progress"></div>
 <div class="nav-hint"><kbd>←</kbd> <kbd>→</kbd> or scroll</div>
