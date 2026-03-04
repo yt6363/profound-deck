@@ -364,6 +364,93 @@
 
   .hl { color: var(--text); font-weight: 400; }
 
+  /* ─── MOBILE RESPONSIVE ────────────────────── */
+  @media (max-width: 768px) {
+    .slide {
+      padding: 60px 24px;
+    }
+    .hero-text {
+      font-size: 2.2rem;
+    }
+    .section-title {
+      font-size: 1.5rem;
+    }
+    .section-body {
+      font-size: 0.9rem;
+    }
+    .project-card {
+      padding: 16px;
+    }
+    .card-title {
+      font-size: 1rem;
+    }
+    .card-desc {
+      font-size: 0.78rem;
+    }
+    .card-stats {
+      gap: 4px;
+    }
+    .stat-chip {
+      font-size: 0.48rem;
+      padding: 2px 5px;
+    }
+    .tech-row {
+      gap: 3px;
+    }
+    .tech-badge {
+      font-size: 0.42rem;
+      padding: 1px 4px;
+    }
+    .reason-list li {
+      font-size: 0.85rem;
+      padding: 12px 0;
+      gap: 10px;
+    }
+    .contact-links {
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .contact-link {
+      padding: 10px 14px;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+    }
+    .slide-label {
+      font-size: 0.45rem;
+    }
+    .timer-container {
+      top: 12px; right: 12px;
+    }
+    .coffee-link {
+      font-size: 0.48rem;
+    }
+    .nav-hint {
+      display: none;
+    }
+    .slide[data-label="LET'S TALK"] .hero-text {
+      font-size: 1.8rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .slide {
+      padding: 50px 16px;
+    }
+    .hero-text {
+      font-size: 1.8rem;
+    }
+    .section-title {
+      font-size: 1.3rem;
+    }
+    .contact-links {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .contact-link {
+      text-align: center;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -558,8 +645,63 @@
     progressEl.appendChild(dot);
   });
 
+  // ═══════════════════════════════════════════════
+  //  ANALYTICS
+  // ═══════════════════════════════════════════════
+  const deckId = 'profound-joey';
+  const analytics = { slides: [], links: [], sessionStart: Date.now(), maxSlide: 0 };
+  let slideEnterTime = Date.now();
+
+  function trackSlide(from, to) {
+    const now = Date.now();
+    if (from !== null) {
+      analytics.slides.push({
+        slide: from + 1,
+        label: slides[from]?.dataset.label || '',
+        duration: Math.round((now - slideEnterTime) / 1000)
+      });
+    }
+    slideEnterTime = now;
+    analytics.maxSlide = Math.max(analytics.maxSlide, to + 1);
+  }
+
+  function trackLink(name, url) {
+    analytics.links.push({ name, url, slide: currentSlide + 1, time: Date.now() });
+  }
+
+  // Track all link clicks
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (link && link.href) trackLink(link.textContent.trim().substring(0, 40), link.href);
+  });
+
+  // Send summary on page leave
+  function getAnalyticsSummary() {
+    trackSlide(currentSlide, currentSlide); // capture last slide duration
+    return {
+      deck: deckId,
+      totalTime: Math.round((Date.now() - analytics.sessionStart) / 1000),
+      maxSlide: analytics.maxSlide,
+      totalSlides: slides.length,
+      completed: analytics.maxSlide === slides.length,
+      slides: analytics.slides,
+      links: analytics.links,
+      timestamp: new Date().toISOString(),
+      referrer: document.referrer || 'direct',
+      userAgent: navigator.userAgent
+    };
+  }
+
+  window.addEventListener('beforeunload', () => {
+    const summary = getAnalyticsSummary();
+    console.log('[DECK ANALYTICS]', JSON.stringify(summary, null, 2));
+    // Uncomment + set your endpoint when ready:
+    // navigator.sendBeacon('https://your-endpoint.com/track', JSON.stringify(summary));
+  });
+
   function goToSlide(n) {
     if (n < 0 || n >= slides.length || n === currentSlide) return;
+    trackSlide(currentSlide, n);
     slides[currentSlide].classList.remove('active');
     currentSlide = n;
     slides[currentSlide].classList.add('active');
@@ -602,5 +744,6 @@
   goToSlide(0);
 
 </script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
