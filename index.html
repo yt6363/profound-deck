@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yash × Profound</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000'/><text x='16' y='22' font-family='sans-serif' font-size='20' font-weight='bold' fill='%2300e600' text-anchor='middle'>P</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #050505;
+    --surface: #0a0a0a;
+    --border: #1a1a1a;
+    --border-hover: #2a2a2a;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --text-muted: #555;
+    --green: #00e600;
+    --green-dim: #00e60022;
+    --green-glow: #00e60044;
+    --accent: #e8e8e8;
+    --accent-dim: #e8e8e822;
+    --accent-glow: #e8e8e844;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    cursor: default;
+  }
+
+
+  .timer-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+    z-index: 1000;
+  }
+  .timer-fill {
+    height: 100%;
+    background: var(--green);
+    width: 100%;
+    transition: width 1s linear;
+    box-shadow: 0 0 10px var(--green-glow);
+  }
+
+  .timer-container {
+    position: fixed;
+    top: 14px; right: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .timer-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-display.running { color: var(--green); }
+  .timer-display.warning { color: #f59e0b; }
+  .timer-display.danger { color: #ef4444; }
+  .timer-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .timer-btn:hover { border-color: var(--green); color: var(--green); }
+
+  .slide-label {
+    position: fixed;
+    top: 14px; left: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--green);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    z-index: 1000;
+  }
+
+  .progress {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 1000;
+  }
+  .progress-dot {
+    width: 6px; height: 6px;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .progress-dot.active {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green-glow);
+    width: 24px;
+  }
+  .progress-dot:hover { background: var(--text-muted); }
+
+  .nav-hint {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    z-index: 1000;
+  }
+  .nav-hint kbd {
+    display: inline-block;
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 1px 5px;
+    font-size: 0.55rem;
+    margin: 0 2px;
+  }
+
+  .slides-wrapper {
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 80px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  .slide-inner {
+    max-width: 960px;
+    width: 100%;
+  }
+
+  .hero-text {
+    font-size: 4.5rem;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .hero-text .accent { color: var(--green); font-weight: 600; }
+  .hero-text .dim { color: var(--text-muted); }
+
+  .section-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-tag::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--green);
+  }
+
+  .section-title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .section-body {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--text-dim);
+    max-width: 600px;
+    font-weight: 300;
+  }
+
+  /* ─── PROJECT CARDS ────────────────────────── */
+  .project-card {
+    border: 1px solid var(--border);
+    padding: 24px;
+    background: var(--surface);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--green);
+    transform: scaleX(0);
+    transition: transform 0.4s;
+    transform-origin: left;
+  }
+  .project-card:hover { border-color: var(--border-hover); }
+  .project-card:hover::before { transform: scaleX(1); }
+
+  .card-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 14px;
+    font-weight: 300;
+    max-width: 500px;
+  }
+  .card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .stat-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .stat-chip.green {
+    border-color: var(--green-dim);
+    color: var(--green);
+    background: var(--green-dim);
+  }
+  .card-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: var(--green);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .card-link::after { content: '→'; }
+  .card-status {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    margin-left: 8px;
+  }
+  .card-status.live {
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    background: var(--green-dim);
+  }
+  .card-status.dev {
+    border: 1px solid #f59e0b33;
+    color: #f59e0b;
+    background: #f59e0b11;
+  }
+
+  .tech-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+  }
+  .tech-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.1em;
+    padding: 2px 5px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .reason-list {
+    list-style: none;
+    margin-top: 32px;
+  }
+  .reason-list li {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+  .reason-list li:first-child { border-top: 1px solid var(--border); }
+  .reason-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    padding-top: 3px;
+    flex-shrink: 0;
+  }
+
+  .contact-links {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .contact-link {
+    border: 1px solid var(--border);
+    padding: 12px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-dim);
+    transition: all 0.3s;
+  }
+  .contact-link:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .contact-link.primary {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+  .contact-link.primary:hover {
+    background: #00ff00;
+    border-color: #00ff00;
+  }
+
+  .slide.active .stagger { animation: fadeUp 0.5s ease both; }
+  .slide.active .stagger:nth-child(1) { animation-delay: 0.1s; }
+  .slide.active .stagger:nth-child(2) { animation-delay: 0.2s; }
+  .slide.active .stagger:nth-child(3) { animation-delay: 0.3s; }
+  .slide.active .stagger:nth-child(4) { animation-delay: 0.4s; }
+  .slide.active .stagger:nth-child(5) { animation-delay: 0.5s; }
+  .slide.active .stagger:nth-child(6) { animation-delay: 0.6s; }
+  .slide.active .stagger:nth-child(7) { animation-delay: 0.7s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hl { color: var(--text); font-weight: 400; }
+
+</style>
+</head>
+<body>
+
+
+<div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+<div class="slide-label" id="slideLabel">01 / 06</div>
+<div class="timer-container">
+  <span class="timer-display" id="timerDisplay">30:00</span>
+  <button class="timer-btn" id="timerToggle" onclick="toggleTimer()">START</button>
+  <button class="timer-btn" onclick="resetTimer()">RESET</button>
+</div>
+<div class="progress" id="progress"></div>
+<div class="nav-hint"><kbd>←</kbd> <kbd>→</kbd> or scroll</div>
+
+<div class="slides-wrapper">
+
+  <!-- SLIDE 1: LANDING -->
+  <div class="slide active" data-label="INTRO">
+    <div class="slide-inner">
+      <div class="hero-text stagger">
+        Hey <span class="accent">Joey</span><span class="dim">.</span>
+      </div>
+      <div class="hero-text stagger" style="margin-top: 8px;">
+        Hey <span class="accent">Profound</span><span class="dim">.</span>
+      </div>
+      <div class="hero-text stagger" style="margin-top: 8px;">
+        <span class="dim">I'm</span> <span class="accent">Yash</span><span class="dim">.</span>
+      </div>
+      <p class="section-body stagger" style="max-width: 520px;">
+        I notice patterns, get curious about them, and then I can't stop until I've built something
+        around them. I put this together so you can see what I mean.
+      </p>
+      <div class="stagger" style="margin-top: 32px;">
+        <span class="section-tag" style="margin-bottom: 0;">SCROLL OR PRESS → TO BEGIN</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: WHO I AM -->
+  <div class="slide" data-label="ABOUT">
+    <div class="slide-inner">
+      <div class="section-tag stagger">About</div>
+      <h2 class="section-title stagger">I notice things most people scroll past.</h2>
+      <p class="section-body stagger">
+        Penn State, Engineering Management. I like taking messy questions
+        and turning them into something people can actually use.
+      </p>
+      <p class="section-body stagger" style="margin-top: 16px;">
+        I'm analytical but I think in product. I'll notice something interesting in data,
+        get curious about whether it's real, and before I know it I've scoped it, designed it,
+        and shipped it. Both projects I'll show you started exactly that way.
+      </p>
+      <p class="section-body stagger" style="margin-top: 16px;">
+        I don't really separate the thinking from the doing. If I'm looking at data,
+        I'm already thinking about what the product should feel like. If I'm designing something,
+        I'm already thinking about how it gets to the right people. I just like owning the whole loop.
+      </p>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: THREE AXIS -->
+  <div class="slide" data-label="THREE AXIS">
+    <div class="slide-inner">
+      <div class="section-tag stagger">Project 01</div>
+      <a href="https://threeaxis.space" target="_blank" class="project-card stagger">
+            <div>
+                <div class="card-tag">SaaS Platform — Live</div>
+                <div class="card-title">Three Axis <span class="card-status live">LIVE</span></div>
+                <div class="card-desc">
+                  Hedge funds pay for satellite imagery of parking lots, shipping data, weather feeds,
+                  anything from outside the financial system that might contain signal. Three Axis is
+                  that same idea, exogenous data overlaid directly on financial charts so users can
+                  explore whether it correlates with price action. Think alternative data platform,
+                  not a prediction tool. Live with a handful of paying users, still working on accuracy
+                  reports and GTM, haven't officially launched yet.
+                </div>
+            </div>
+            <div class="card-stats">
+              <span class="stat-chip green">Live — Pre-Launch</span>
+              <span class="stat-chip">Product + Design + Eng</span>
+              <span class="stat-chip">Full Stack</span>
+            </div>
+            <div class="tech-row">
+              <span class="tech-badge">Next.js 16</span>
+              <span class="tech-badge">React 19</span>
+              <span class="tech-badge">FastAPI</span>
+              <span class="tech-badge">ECharts</span>
+              <span class="tech-badge">D3.js</span>
+              <span class="tech-badge">PostgreSQL</span>
+              <span class="tech-badge">Stripe</span>
+            </div>
+        <div class="card-link">Visit threeaxis.space</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: CYCLE X -->
+  <div class="slide" data-label="CYCLE X">
+    <div class="slide-inner">
+      <div class="section-tag stagger">Project 02</div>
+      <a href="https://yashtatineni.framer.website/cycle-x/cycle-xx" target="_blank" class="project-card stagger">
+            <div>
+              <div class="card-tag">Prediction Engine — Any Time Series</div>
+              <div class="card-title">Cycle X <span class="card-status dev">IN DEV</span></div>
+              <div class="card-desc">
+                Imagine knowing precisely where the 2020 COVID crash and its bottom would land. Or the
+                2024 correction. Or the 2025 drop. Cycle X does that. It applies a proprietary
+                geometric transformation to price data, maps it into a coordinate space where market
+                dynamics become linear and measurable, then uses feature engineering on historical
+                swing structures to predict where the next one completes. Validated out of sample.
+                Works on any time series, mainly equities.
+              </div>
+            </div>
+            <div class="card-stats">
+              <span class="stat-chip green">Any Time Series</span>
+              <span class="stat-chip green">Backtested</span>
+              <span class="stat-chip">Out-of-Sample Validated</span>
+            </div>
+            <div class="tech-row">
+              <span class="tech-badge">Python</span>
+              <span class="tech-badge">Dash / Plotly</span>
+              <span class="tech-badge">scipy</span>
+              <span class="tech-badge">scikit-learn</span>
+              <span class="tech-badge">yfinance</span>
+            </div>
+        <div class="card-link">View Cycle X</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: WHY PROFOUND -->
+  <div class="slide" data-label="WHY PROFOUND">
+    <div class="slide-inner">
+      <div class="section-tag stagger">Why I'm Here</div>
+      <h2 class="section-title stagger">Why <span style="color: var(--green);">Profound</span></h2>
+      <ul class="reason-list">
+        <li class="stagger">
+          <span class="reason-num">01</span>
+          <span>AI is changing how people find information. Not slowly, right now. Profound is building the tooling for that shift, and I think that's a once-in-a-decade category. I want to be in the room where that's getting figured out.</span>
+        </li>
+        <li class="stagger">
+          <span class="reason-num">02</span>
+          <span>Seed to $1B in 16 months tells me every person here matters and every decision compounds. That's the kind of environment where I do my best work, fast, high stakes, no hiding behind process.</span>
+        </li>
+        <li class="stagger">
+          <span class="reason-num">03</span>
+          <span>You went from a monitoring dashboard to an execution platform with Agents and Workflows. That "observe to act" shift is exactly how I think about product, don't just show the data, help people do something with it. I'd love to push that forward.</span>
+        </li>
+        <li class="stagger">
+          <span class="reason-num">04</span>
+          <span>I'm easy to get up to speed. New tech, new tools, new domain, I'll learn it. That's never been the thing that slows me down.</span>
+        </li>
+        <li class="stagger">
+          <span class="reason-num">05</span>
+          <span>I come in with a bag full of happy energy. I like getting things done and I like making the people around me feel good while we're doing it.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: LET'S TALK -->
+  <div class="slide" data-label="LET'S TALK">
+    <div class="slide-inner" style="text-align: center;">
+      <div class="hero-text stagger" style="font-size: 3.5rem;">
+        Would love to <span class="accent">chat</span><span class="dim">.</span>
+      </div>
+      <p class="section-body stagger" style="margin: 20px auto 0; text-align: center; max-width: 420px;">
+        Really appreciate you taking a look, Joey.
+      </p>
+      <div class="contact-links stagger" style="margin-top: 36px; justify-content: center;">
+        <a href="https://www.linkedin.com/in/yashwanthsaitatineni/" target="_blank" class="contact-link">LINKEDIN</a>
+        <a href="https://github.com/yt6363" target="_blank" class="contact-link">GITHUB</a>
+        <a href="https://yashtatineni.framer.website" target="_blank" class="contact-link">PORTFOLIO</a>
+        <a href="https://drive.google.com/file/d/1LUfI3U8cPeM7wXXQaxuw45OtLFmLDzak/view?usp=sharing" target="_blank" class="contact-link primary">RESUME</a>
+      </div>
+      <p class="stagger" style="margin-top: 48px; font-family: 'Space Mono', monospace; font-size: 0.55rem; color: var(--text-muted); letter-spacing: 0.2em;">
+        YASH TATINENI — PENN STATE — MARCH 2026
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const progressEl = document.getElementById('progress');
+  const slideLabel = document.getElementById('slideLabel');
+  let currentSlide = 0;
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goToSlide(i);
+    progressEl.appendChild(dot);
+  });
+
+  function goToSlide(n) {
+    if (n < 0 || n >= slides.length || n === currentSlide) return;
+    slides[currentSlide].classList.remove('active');
+    currentSlide = n;
+    slides[currentSlide].classList.add('active');
+    document.querySelectorAll('.progress-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === currentSlide);
+    });
+    const label = slides[currentSlide].dataset.label || '';
+    slideLabel.textContent = String(currentSlide + 1).padStart(2, '0') + ' / ' +
+      String(slides.length).padStart(2, '0') + (label ? '  —  ' + label : '');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); goToSlide(currentSlide + 1);
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); goToSlide(currentSlide - 1);
+    }
+  });
+
+  let scrollTimeout = false;
+  document.addEventListener('wheel', (e) => {
+    if (scrollTimeout) return;
+    scrollTimeout = true;
+    setTimeout(() => scrollTimeout = false, 1400);
+    if (e.deltaY > 0) goToSlide(currentSlide + 1);
+    else goToSlide(currentSlide - 1);
+  }, { passive: true });
+
+  let touchStartY = 0;
+  document.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goToSlide(currentSlide + 1);
+      else goToSlide(currentSlide - 1);
+    }
+  });
+
+  goToSlide(0);
+
+  let totalSeconds = 30 * 60;
+  let remainingSeconds = totalSeconds;
+  let timerInterval = null;
+  let timerRunning = false;
+
+  const timerDisplay = document.getElementById('timerDisplay');
+  const timerFill = document.getElementById('timerFill');
+  const timerToggle = document.getElementById('timerToggle');
+
+  function updateTimerDisplay() {
+    const m = Math.floor(remainingSeconds / 60);
+    const s = remainingSeconds % 60;
+    timerDisplay.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    timerFill.style.width = ((remainingSeconds / totalSeconds) * 100) + '%';
+    timerDisplay.className = 'timer-display';
+    if (timerRunning) {
+      if (remainingSeconds <= 120) timerDisplay.classList.add('danger');
+      else if (remainingSeconds <= 300) timerDisplay.classList.add('warning');
+      else timerDisplay.classList.add('running');
+    }
+  }
+
+  function toggleTimer() {
+    if (timerRunning) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerToggle.textContent = 'START';
+    } else {
+      timerRunning = true;
+      timerToggle.textContent = 'PAUSE';
+      timerInterval = setInterval(() => {
+        if (remainingSeconds > 0) { remainingSeconds--; updateTimerDisplay(); }
+        else { clearInterval(timerInterval); timerRunning = false; timerToggle.textContent = 'DONE'; }
+      }, 1000);
+    }
+    updateTimerDisplay();
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    remainingSeconds = totalSeconds;
+    timerToggle.textContent = 'START';
+    updateTimerDisplay();
+  }
+
+  updateTimerDisplay();
+</script>
+</body>
+</html>
